@@ -1,0 +1,84 @@
+name: Build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["*"]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos-build:
+    name: Build (macOS Universal)
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure
+        run: cmake --preset macos-ci
+
+      - name: Build
+        run: cmake --build --preset macos-ci
+
+      - name: Locate plugin bundle
+        id: locate
+        run: |
+          set -euo pipefail
+          bundle=$(find build_macos -maxdepth 3 -name "py-virtual-cam-feed.plugin" -type d | head -n1)
+          if [ -z "$bundle" ]; then
+            echo "::error::plugin bundle not found under build_macos"
+            exit 1
+          fi
+          echo "bundle=$bundle" >> "$GITHUB_OUTPUT"
+          echo "Found $bundle"
+
+      - name: Verify ad-hoc signature
+        run: codesign --verify --verbose=2 "${{ steps.locate.outputs.bundle }}"
+
+      - name: Package artifact
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          # ditto preserves the bundle structure and symlinks inside a zip.
+          ditto -c -k --sequesterRsrc --keepParent \
+            "${{ steps.locate.outputs.bundle }}" \
+            dist/py-virtual-cam-feed-macos-universal.zip
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: py-virtual-cam-feed-macos-universal
+          path: dist/py-virtual-cam-feed-macos-universal.zip
+          if-no-files-found: error
+
+  python-checks:
+    name: Python client checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install NumPy
+        run: python -m pip install --upgrade pip numpy
+
+      - name: Syntax-check all Python
+        run: |
+          set -euo pipefail
+          find python tests -name "*.py" -print0 \
+            | xargs -0 -I{} python -c "import ast,sys; ast.parse(open('{}').read()); print('ok: {}')"
+
+      - name: UDS round-trip test
+        run: python tests/test_uds_roundtrip.py

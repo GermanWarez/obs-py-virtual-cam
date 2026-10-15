@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure
+        run: cmake --preset macos-ci
+
+      - name: Build
+        run: cmake --build --preset macos-ci
+
+      - name: Package artifact
+        id: package
+        run: |
+          set -euo pipefail
+          bundle=$(find build_macos -maxdepth 3 -name "py-virtual-cam-feed.plugin" -type d | head -n1)
+          [ -n "$bundle" ] || { echo "::error::plugin bundle not found"; exit 1; }
+          mkdir -p dist
+          zip="dist/py-virtual-cam-feed-${GITHUB_REF_NAME}-macos-universal.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$bundle" "$zip"
+          echo "zip=$zip" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.package.outputs.zip }}
+          generate_release_notes: true
+          body: |
+            Prebuilt macOS Universal plugin bundle (ad-hoc signed, **not** notarized).
+
+            After downloading, clear the macOS quarantine flag before OBS will load it:
+
+            ```sh
+            xattr -dr com.apple.quarantine \
+              ~/Library/Application\ Support/obs-studio/plugins/py-virtual-cam-feed.plugin
+            ```
+
+            See the README "Prebuilt downloads and macOS Gatekeeper" section for details.

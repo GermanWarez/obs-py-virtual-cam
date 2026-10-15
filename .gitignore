@@ -1,0 +1,41 @@
+# Exclude everything
+/*
+
+# Except for default project files
+!/.github
+!/build-aux
+!/cmake
+!/data
+!/python
+!/src
+!/tests
+!.clang-format
+!.gersemirc
+!.gitignore
+!buildspec.json
+!CMakeLists.txt
+!CMakePresets.json
+!LICENSE
+!README.md
+
+# Exclude build + dependency directories
+/build_macos
+/build_*
+/.deps
+/release
+
+# Exclude generated sources (produced at build time from python/samples)
+/src/generated/sample_sources.h
+
+# Exclude lock files
+*.lock.json
+
+# Exclude macOS legacy resource forks
+.DS_Store
+
+# Exclude Python bytecode caches
+__pycache__/
+*.pyc
+
+# Exclude CMake build number cache
+/cmake/.CMakeBuildNumber

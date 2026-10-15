@@ -1,0 +1,43 @@
+{
+    "dependencies": {
+        "obs-studio": {
+            "version": "32.2.2",
+            "baseUrl": "https://github.com/obsproject/obs-studio/archive/refs/tags",
+            "label": "OBS sources",
+            "hashes": {
+                "macos": "35d3cd0979d65664fada7119fdb612eca7c34b61a1623a330caec74bf72626c4"
+            }
+        },
+        "prebuilt": {
+            "version": "2025-08-23",
+            "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
+            "label": "Pre-Built obs-deps",
+            "hashes": {
+                "macos": "9403bb43fb0a9bb215739a5659ca274fe884dbbbcd22bd9ca781c961fb041c42"
+            }
+        },
+        "qt6": {
+            "version": "2025-08-23",
+            "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
+            "label": "Pre-Built Qt6",
+            "hashes": {
+                "macos": "990f11638b80a4509e14e8c315f6e4caa0861e37fcd3113a256fbff835ffca29"
+            }
+        }
+    },
+    "platformConfig": {
+        "macos": {
+            "bundleId": "com.example.py-virtual-cam-feed"
+        }
+    },
+    "name": "py-virtual-cam-feed",
+    "displayName": "obs-py-virtual-cam",
+    "version": "1.0.0",
+    "author": "GermanWarez",
+    "website": "https://github.com/GermanWarez/obs-py-virtual-cam",
+    "email": "py-virtual-cam-feed@example.com",
+    "uuids": {
+        "macosPackage": "9d8f3c2a-1b4e-4a6c-9f2d-7c3e5a1b8d40",
+        "macosInstaller": "2c7b9e14-5a3d-4f81-b6c2-0e9a4d7f1b63"
+    }
+}
